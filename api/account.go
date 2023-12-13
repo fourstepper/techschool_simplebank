@@ -10,7 +10,7 @@ import (
 
 type createAccountRequest struct {
 	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required,oneof=USD EUR"`
+	Currency string `json:"currency" binding:"required,oneof=USD EUR CAD"`
 }
 
 type getAccountRequest struct {
@@ -26,7 +26,7 @@ type updateAccountRequest struct {
 	Balance int64 `json:"balance" binding:"required,min=1"`
 }
 
-type listAccountRequest struct {
+type listAccountsRequest struct {
 	PageID   int32 `form:"page_id" binding:"required,min=1"`
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
 }
@@ -76,8 +76,8 @@ func (s *Server) getAccount(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, account)
 }
 
-func (s *Server) listAccount(ctx *gin.Context) {
-	var req listAccountRequest
+func (s *Server) listAccounts(ctx *gin.Context) {
+	var req listAccountsRequest
 
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -90,11 +90,6 @@ func (s *Server) listAccount(ctx *gin.Context) {
 	}
 	accounts, err := s.store.ListAccounts(ctx, arg)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
-
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -132,13 +127,32 @@ func (s *Server) deleteAccount(ctx *gin.Context) {
 		return
 	}
 
-	err := s.store.DeleteAccount(ctx, req.ID)
-	if err != nil {
+	_, err := s.store.DeleteAccount(ctx, req.ID)
+	switch err {
+	case sql.ErrNoRows:
+		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		return
+	case nil:
+		ctx.JSON(http.StatusOK, gin.H{
+			"status": "deleted",
+		})
+		return
+	default:
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"status": "deleted",
-	})
+	// if err != nil {
+	// 	if err == sql.ErrNoRows {
+	// 		ctx.JSON(http.StatusNotFound, errorResponse(err))
+	// 		return
+	// 	} else {
+	// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 		return
+	// 	}
+	// }
+
+	// ctx.JSON(http.StatusOK, gin.H{
+	// 	"status": "deleted",
+	// })
 }

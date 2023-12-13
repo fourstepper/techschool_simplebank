@@ -14,11 +14,16 @@ type Server struct {
 func NewServer(store db.Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
+	router.GET("/health-check", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "ok dssddsdsd",
+		})
+	})
 	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts/:id", server.getAccount)
-	router.GET("/accounts", server.listAccount)
-	router.PUT("accounts/", server.updateAccount)
-	router.DELETE("accounts/:id", server.deleteAccount)
+	router.GET("/accounts", server.listAccounts)
+	router.PUT("/accounts", server.updateAccount)
+	router.DELETE("/accounts/:id", server.deleteAccount)
 
 	server.router = router
 	return server
