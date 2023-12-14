@@ -49,3 +49,9 @@ func TestRandomCurrency(t *testing.T) {
 	require.NotEmpty(t, currency)
 	require.True(t, exists)
 }
+
+func TestRandomEmail(t *testing.T) {
+	email := RandomEmail()
+	require.NotEmpty(t, email)
+	require.Contains(t, email, "@gmail.com")
+}
