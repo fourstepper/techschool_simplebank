@@ -13,8 +13,15 @@ dropdb:
 migrateup:
 	migrate -path db/migration -database "postgresql://root:mokopass@localhost:5432/simple_bank?sslmode=disable" -verbose up
 
+migrateup1:
+	migrate -path db/migration -database "postgresql://root:mokopass@localhost:5432/simple_bank?sslmode=disable" -verbose up 1
+
 migratedown:
 	migrate -path db/migration -database "postgresql://root:mokopass@localhost:5432/simple_bank?sslmode=disable" -verbose down
+
+migratedown1:
+	migrate -path db/migration -database "postgresql://root:mokopass@localhost:5432/simple_bank?sslmode=disable" -verbose down 1
+
 
 sqlc:
 	sqlc generate
@@ -31,4 +38,4 @@ mock:
 testcoverhtml:
 	go test ./... -coverprofile=cover.out && go tool cover -html=cover.out -o cover.html
 
-.PHONY: postgres postgresrun createdb dropdb migrateup migratedown sqlc server mock testcoverhtml
+.PHONY: postgres postgresrun createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc server mock testcoverhtml
